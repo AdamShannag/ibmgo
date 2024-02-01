@@ -1,0 +1,51 @@
+<div class="flex flex-column gap-3">
+  <div class="flex justify-content-center gap-3">
+    <input pInputText type="text" placeholder="Queue name" [(ngModel)]="queue" class="p-inputtext-lg w-full" />
+    <p-button pRipple type="button" label="Send" icon="pi pi-send" (click)="sendMessage()" size="large"></p-button>
+  </div>
+
+  <textarea rows="20" cols="30" pInputTextarea [(ngModel)]="message" [autoResize]="false" style="resize:none;"
+    placeholder="your message goes here!"></textarea>
+</div>
+
+<div class="mt-4">
+  <p-table [value]="queueMessages()" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-center align-content-center h-2rem">
+        <h3 class="w-full text-400">Messages</h3>
+        <div class="flex justify-content-end">
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" [raised]="false" severity="danger"
+            (onClick)="clearQueues()"></p-button>
+          <p-button icon="pi pi-refresh" [rounded]="true" [text]="true" [raised]="false" severity="info"
+            (onClick)="refreshMessages()"></p-button>
+        </div>
+      </div>
+
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Timestamp</th>
+        <th>Message ID</th>
+        <th>Data</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-message>
+      <tr>
+        <td>{{ message.Timestamp }}</td>
+        <td>{{ message.MessageID }}</td>
+        <td>{{ message.Data }}</td>
+      </tr>
+
+    </ng-template>
+    <ng-template pTemplate="summary">
+      @if(queueMessages().length ===0){ <p class="text-center">You don't currently have any messages to display</p>
+      }@else {
+      <div class="text-center">
+        Total: {{queueMessages() ? queueMessages().length : 0 }} messages.
+      </div>
+      }
+
+    </ng-template>
+
+  </p-table>
+</div>

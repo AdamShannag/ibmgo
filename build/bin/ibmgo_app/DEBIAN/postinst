@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Define the installation directory, app name, and LD_LIBRARY_PATH
+INSTALL_DIR="/usr/bin/ibmgo"
+APP_NAME="ibmgo"
+LD_LIBRARY_PATH_COMMAND="export LD_LIBRARY_PATH=/usr/bin/ibmgo/ibmmq/lib64"
+
+# Display installation instructions
+echo "**************************************************"
+echo "    ibmgo Installation Complete"
+echo "**************************************************"
+echo
+echo "Thank you for installing ibmgo! Here are the setup instructions:"
+echo
+echo "1. Add ibmgo to your PATH by running the following command:"
+echo "   echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.bashrc"
+echo
+echo "2. Set LD_LIBRARY_PATH with the following command:"
+echo "   echo '$LD_LIBRARY_PATH_COMMAND' >> ~/.bashrc"
+echo
+echo "3. After running the commands, please restart your terminal or run 'source ~/.bashrc'."
+echo
+echo "Now, you can start $APP_NAME by simply typing '$APP_NAME' in the terminal."
+echo
+echo "**************************************************"
+echo "    Enjoy using ibmgo!"
+echo "**************************************************"
+
+# Display a completion message
+echo "Installation of ibmgo is complete."
+
+exit 0

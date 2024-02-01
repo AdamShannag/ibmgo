@@ -1,0 +1,16 @@
+<p-sidebar [(visible)]="visible" [position]="sidebarPosition()" [transitionOptions]="'.3s cubic-bezier(0, 0, 0.2, 1)'"
+  styleClass="layout-config-sidebar w-20rem">
+  <h5>Scale</h5>
+  <div class="flex align-items-center justify-content-center">
+    <button icon="pi pi-minus" type="button" pButton (click)="decrementScale()"
+      class="p-button-text p-button-rounded w-2rem h-2rem mr-2" [disabled]="scale === scales[0]"></button>
+    <div class="flex gap-2 align-items-center">
+      @for(s of scales; track null){
+      <i class="pi pi-circle-fill text-300" [ngClass]="{'text-primary-500': s === scale}"></i>
+      }
+    </div>
+    <button icon="pi pi-plus" type="button" pButton (click)="incrementScale()"
+      class="p-button-text p-button-rounded w-2rem h-2rem ml-2"
+      [disabled]="scale === scales[scales.length - 1]"></button>
+  </div>
+</p-sidebar>

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "ibmgo",
+  "outputfilename": "ibmgo",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "author": {
+    "name": "ps.adam.shannaq",
+    "email": "adam.shannaq@progressoft.com"
+  }
+}

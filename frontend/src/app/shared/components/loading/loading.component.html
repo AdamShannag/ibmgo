@@ -1,0 +1,6 @@
+@if (loadingService.loading$ | async) {
+  <div class="spinner-container">
+    <p-progressSpinner styleClass="w-4rem h-4rem ng-spinner" strokeWidth="8"
+                       animationDuration=".5s"></p-progressSpinner>
+  </div>
+}

@@ -1,0 +1,6 @@
+Package: ibmgo
+Version: 1.0
+Architecture: amd64
+Maintainer: Your Name <your.email@example.com>
+Description: Your application description
+.
