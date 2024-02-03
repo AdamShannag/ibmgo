@@ -1,13 +1,9 @@
 <ul class="layout-menu">
-  <!-- <a class="sidebar-logo" routerLink="">
-    <img src="assets/layout/images/{{layoutService.config().colorScheme === 'dark' ? 'logo-dark' : 'logo2-white'}}.png"
-      alt="logo">
-  </a> -->
-  @for(item of model; track null; let i=$index){
-  @if (!item.separator){
+  @for(item of model; track null; let i=$index)
+  {
+  @if (!item.separator) {
   <li app-menuitem [item]="item" [index]="i" [root]="true"></li>
-  }@else {
-  <li class="menu-separator"></li>
   }
+  @else {<li class="menu-separator"></li>}
   }
 </ul>

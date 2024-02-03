@@ -34,15 +34,15 @@ export class NewConnectionDialogComponent {
     }
 
     const data: QueueMangerConnectionData = {
-      queueName: this.formGroup.value['queue'],
+      queueManager: this.formGroup.value['queue'],
       hostname: this.formGroup.value['hostname'],
-      channel: this.formGroup.value['channel'],
+      channel: { channelName: this.formGroup.value['channel'], queues: [] },
       port: this.formGroup.value['port'],
       username: this.formGroup.value['username'],
       password: this.formGroup.value['password'],
     }
 
-    this.ibmGoApiService.connectToIbmmq(data.port!, data.queueName, data.hostname!, data.channel, data.username!, data.password!)
+    this.ibmGoApiService.connectToIbmmq(data.port!, data.queueManager, data.hostname!, data.channel.channelName, data.username!, data.password!)
       .then(connected => {
         if (!connected) return
         this.ref.close(data)

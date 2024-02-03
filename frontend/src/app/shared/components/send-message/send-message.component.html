@@ -1,11 +1,12 @@
 <div class="flex flex-column gap-3">
   <div class="flex justify-content-center gap-3">
-    <input pInputText type="text" placeholder="Queue name" [(ngModel)]="queue" class="p-inputtext-lg w-full" />
+    <input pInputText type="text" placeholder="Queue name" [(ngModel)]="queue" [disabled]="true"
+      class="p-inputtext-lg w-full" />
     <p-button pRipple type="button" label="Send" icon="pi pi-send" (click)="sendMessage()" size="large"></p-button>
   </div>
 
   <textarea rows="20" cols="30" pInputTextarea [(ngModel)]="message" [autoResize]="false" style="resize:none;"
-    placeholder="your message goes here!"></textarea>
+    placeholder="your message goes here!" (change)="updateRequestData()"></textarea>
 </div>
 
 <div class="mt-4">

@@ -14,7 +14,7 @@ export const DASHBOARD_ROUTES: Routes = [
         component: DashboardComponent
       },
       {
-        path: 'queue/:queue/:channel',
+        path: 'queue/:queueManager/:channel/:queue',
         component: QueueRequestsComponent,
         resolve: {
           data: queueChannelConnectResolver,

@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute } from '@angular/router';
 import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
+import { QueueMangerConnectionData } from '../../../shared/services/ibmmq.data.service';
 
 
 @Component({
@@ -30,52 +31,62 @@ import { TableModule } from 'primeng/table';
   styleUrl: './queue-requests.component.scss'
 })
 export class QueueRequestsComponent {
+  isActive = true
   newTab = '';
-  queueName = 'Queue'
+  queueManager = 'Queue'
   channelName = 'Channel'
+  queue = 'Queue1'
 
-  products = [{
-    code: "1111",
-    name: "test",
-    category: "ASDSA",
-    quantity: 10
-
-  }]
-
-  tabs = signal<{ id: number, title: string, closable: boolean }[]>([]);
-
-  activeIndex: number = 0;
+  tabs = signal<{ id: number, title: string, closable: boolean, selected: boolean, messageContent: string }[]>([]);
 
   constructor(private messageService: MessageService, private route: ActivatedRoute) {
-    this.route.data.subscribe(r => {
-      this.queueName = r['data']['queueName']
-      this.channelName = r['data']['channel']
-    })
+  }
+
+  addNewTab(tabData: { id: number, title: string, closable: boolean, selected: boolean, messageContent: string }) {
+    this.tabs.update(items => {
+      const newId = items.length;
+      tabData.id = newId
+      const newItems = [...items, tabData];
+      return newItems;
+    });
+
   }
 
   ngOnInit() {
-    this.tabs.set([
-      { id: -999, title: 'add', closable: false },
-    ])
+    this.route.data.subscribe(r => {
+      this.tabs.set([])
+      const data = r['data'] as QueueMangerConnectionData
+      this.queueManager = data.queueManager
+      this.channelName = data.channel.channelName
+      this.queue = data.channel.queues[0].queueName
+      data.channel.queues[0].requests.forEach((item, i) => {
+        this.addNewTab({ id: 0, title: item.requestName, closable: true, selected: i === data.channel.queues[0].requests.length - 1, messageContent: item.message.message })
+      })
+    })
   }
 
-  addTab() {
-    const id = this.tabs().length + 1
-    const newTabName = this.newTab === '' ? 'New tab' : this.newTab
+  addTab(tab: any) {
+    const newTabName = this.newTab.trim() === '' ? 'New tab' : this.newTab.trim();
     this.tabs.update(items => {
-      const lastItem = items.pop()
-      if (lastItem) {
-        return [...items, {
-          id: id, title: newTabName, closable: true,
-        }, lastItem]
-      }
-      return [...items, {
-        id: id, title: newTabName, closable: true,
-      }]
-    })
+      items.forEach(item => item.selected = false)
+      const newId = items.length;
+      const newTab = {
+        id: newId,
+        title: newTabName,
+        closable: true,
+        selected: true,
+        messageContent: ''
+      };
+      const newItems = [...items, newTab];
+      return newItems;
+    });
+
     this.newTab = '';
-    this.activeIndex = id - 2
+
+    tab.selected = false
+    console.log(this.tabs())
   }
+
 
   showToastMessage($event: Message) {
     this.messageService.add($event);

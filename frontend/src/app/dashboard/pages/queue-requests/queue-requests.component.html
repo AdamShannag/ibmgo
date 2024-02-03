@@ -5,7 +5,7 @@
       <div class="flex justify-content-between mb-3">
         <div>
           <span class="block text-500 font-medium mb-3">Queue</span>
-          <div class="text-900 font-medium text-xl">{{queueName}}</div>
+          <div class="text-900 font-medium text-xl">{{queueManager}}</div>
         </div>
         <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
           [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
@@ -33,25 +33,24 @@
 <div class="card mb-4">
   <h3 class="text-400">Requests</h3>
   <p-divider></p-divider>
-  <p-tabView [(activeIndex)]="activeIndex">
+  <p-tabView>
     @for(tab of tabs();track tab.id;let i = $index){
-    @if(tab.title==='add'){
-    <p-tabPanel [selected]="i == activeIndex">
+    <p-tabPanel [header]="tab.title" [closable]="true" [selected]="tab.selected">
+      <app-send-message (toastMessageEvent)="showToastMessage($event)" [channelName]="channelName"
+        [queueManager]="queueManager" [queue]="queue" [request]="tab.title"
+        [message]="tab.messageContent"></app-send-message>
+    </p-tabPanel>
+    }
+    <p-tabPanel #tab>
       <ng-template pTemplate="header">
         <i class="pi pi-plus"></i>
       </ng-template>
       <div class="flex justify-content-center gap-3">
         <input pInputText type="text" placeholder="Request name" [(ngModel)]="newTab" class="p-inputtext-lg w-full" />
-        <p-button pRipple type="button" label="Add" icon="pi pi-plus" severity="success" (click)="addTab()"
+        <p-button pRipple type="button" label="Add" icon="pi pi-plus" severity="success" (click)="addTab(tab)"
           size="large"></p-button>
       </div>
     </p-tabPanel>
-    }@else{
-    <p-tabPanel [header]="tab.title" [closable]="true" [selected]="i == activeIndex">
-      <app-send-message (toastMessageEvent)="showToastMessage($event)" [channelName]="channelName"
-        [queueName]="queueName"></app-send-message>
-    </p-tabPanel>
-    }
-    }
+
   </p-tabView>
 </div>

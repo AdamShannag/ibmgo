@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { Message } from 'primeng/api';
 import { IbmGoApiService, QueueMessage } from '../../services/ibm.go.api.service';
+import { IbmmqDataService } from '../../services/ibmmq.data.service';
 
 export type QueueMessageEvent = {
   queue: string;
@@ -22,21 +23,25 @@ export type QueueMessageEvent = {
 })
 export class SendMessageComponent {
   @Input()
-  queueName = ''
+  queueManager = ''
   @Input()
   channelName = ''
 
+  @Input()
   queue = ''
+  @Input()
   message = ''
+  @Input()
+  request = ''
 
   queueMessages = signal<QueueMessage[]>([]);
 
   @Output() toastMessageEvent = new EventEmitter<Message>();
 
-  constructor(private ibmGoApiService: IbmGoApiService) { }
+  constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService) { }
 
   sendMessage() {
-    this.ibmGoApiService.sendMessageToQueue(this.queueName, this.channelName, this.queue, this.message).finally()
+    this.ibmGoApiService.sendMessageToQueue(this.queueManager, this.channelName, this.queue, this.message).finally()
   }
 
   refreshMessages() {
@@ -44,7 +49,7 @@ export class SendMessageComponent {
       this.toastMessageEvent.emit({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Field: Queue name is empty!' });
       return
     }
-    this.ibmGoApiService.browseMessages(this.queueName, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
+    this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
   }
 
   clearQueues() {
@@ -52,8 +57,12 @@ export class SendMessageComponent {
       this.toastMessageEvent.emit({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Field: Queue name is empty!' });
       return
     }
-    this.ibmGoApiService.consumeAllMessages(this.queueName, this.channelName, this.queue).then(_ => {
-      this.ibmGoApiService.browseMessages(this.queueName, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
+    this.ibmGoApiService.consumeAllMessages(this.queueManager, this.channelName, this.queue).then(_ => {
+      this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
     })
+  }
+
+  updateRequestData() {
+    this.ibmDataService.saveMessageToQueueRequest(this.queueManager, this.channelName, this.queue, this.request, this.message)
   }
 }

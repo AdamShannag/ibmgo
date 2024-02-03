@@ -5,7 +5,8 @@ import { MenuItemComponent } from '../menu-item/menu-item.component';
 import { MenuItem } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NewConnectionDialogComponent } from '../../../shared/components/new-connection-dialog/new-connection-dialog.component';
-import { IbmmqDataService, QueueMangerConnectionData } from '../../../shared/services/ibmmq.data.service';
+import { IbmmqDataService, QueueChannelData, QueueMangerConnectionData } from '../../../shared/services/ibmmq.data.service';
+import { NewQueueDialogComponent } from '../../../shared/components/new-queue-dialog/new-queue-dialog.component';
 
 @Component({
   selector: 'app-menu',
@@ -21,18 +22,68 @@ export class MenuComponent implements OnInit {
   constructor(public layoutService: DashboardLayoutService, private dialogService: DialogService, private ibmmqService: IbmmqDataService) {
   }
 
-  menuItems() {
-    const menuItem: MenuItem[] = []
-    this.ibmmqService.queues().forEach(item => {
-      const menuParentItem: MenuItem = { label: item.queueName, icon: 'pi pi-envelope' }
-      const childMenuItems: MenuItem[] = []
-      item.data.forEach(childItem => { childMenuItems.push({ label: childItem.channel, icon: 'pi pi-box', routerLink: ['queue', childItem.queueName, childItem.channel] }) })
-      menuParentItem.items = [...childMenuItems]
-      menuItem.push(menuParentItem)
-    })
-    console.log(menuItem)
-    return menuItem;
+
+  menuItems(): MenuItem[] {
+    return this.ibmmqService.queues().map(queueManager => ({
+      label: queueManager.queueManager,
+      icon: 'pi pi-envelope',
+      items: queueManager.data.map(queueData => ({
+        label: queueData.channel.channelName,
+        icon: 'pi pi-box',
+        items: this.constructQueueItems(queueManager.queueManager, queueData.channel)
+      }))
+    }));
   }
+
+  private constructQueueItems(queueManager: string, channel: QueueChannelData): MenuItem[] {
+    const queueItems = channel.queues.map(queue => ({
+      label: queue.queueName,
+      icon: 'pi pi-box',
+      routerLink: ['queue', queueManager, channel.channelName, queue.queueName]
+    }));
+
+    const newQueueItem = {
+      label: 'New Queue',
+      icon: 'pi pi-plus',
+      command: () => this.openNewQueueDialog(queueManager, channel.channelName)
+    };
+
+    return [newQueueItem, ...queueItems];
+  }
+
+  private openNewQueueDialog(queueManager: string, channelName: string): void {
+    const ref = this.dialogService.open(NewQueueDialogComponent, {
+      header: 'New Queue',
+      width: '40%',
+      contentStyle: { overflow: 'auto' },
+      baseZIndex: 10000,
+      maximizable: false
+    });
+
+    ref.onClose.subscribe((queueName: string) => {
+      if (queueName) {
+        this.ibmmqService.addQueueToChannel(queueManager, channelName, queueName);
+        this.addQueueMenuItem(queueName, queueManager, channelName)
+      }
+    });
+  }
+
+  addQueueMenuItem(queueName: string, queueManagerName: string, channelName: string): void {
+    const queueManagerItem = this.model[1].items?.find(item => item.label === queueManagerName);
+    if (!queueManagerItem) return;
+    queueManagerItem.items = queueManagerItem.items ?? [];
+    let channelItem = queueManagerItem.items.find(item => item.label === channelName);
+    if (!channelItem) {
+      channelItem = { label: channelName, icon: 'pi pi-box', items: [] };
+      queueManagerItem.items.push(channelItem);
+    }
+    channelItem.items?.push({
+      label: queueName,
+      icon: 'pi pi-send',
+      routerLink: ['queue', queueManagerName, channelName, queueName]
+    });
+  }
+
 
   ngOnInit() {
     this.model = [
@@ -63,7 +114,6 @@ export class MenuComponent implements OnInit {
       },
       {
         label: 'Connections',
-        items: []
       },
     ];
   }
