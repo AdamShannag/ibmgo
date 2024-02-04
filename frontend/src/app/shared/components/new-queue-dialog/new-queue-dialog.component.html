@@ -1,13 +1,11 @@
-<div class="card flex justify-content-center">
-  <form (ngSubmit)="addQueue()" [formGroup]="formGroup">
-    <div class="p-fluid p-formgrid grid">
-      <div class="field col-12">
-        <label htmlFor="queue">Queue Name</label>
-        <input pInputText id="queue" type="text" formControlName="queue" class="p-inputtext-lg" />
-      </div>
+<form (ngSubmit)="addQueue()" [formGroup]="formGroup" class="p-4">
+  <div class="p-fluid p-formgrid grid">
+    <div class="field col-12">
+      <label htmlFor="queue">Queue Name</label>
+      <input pInputText id="queue" type="text" formControlName="queue" class="p-inputtext-lg" />
     </div>
-    <div class="flex justify-content-end">
-      <p-button pRipple type="submit" label="Connect" icon="pi pi-check" size="large"></p-button>
-    </div>
-  </form>
-</div>
+  </div>
+  <div class="flex justify-content-end">
+    <p-button pRipple type="submit" label="Add" icon="pi pi-plus" size="large"></p-button>
+  </div>
+</form>
