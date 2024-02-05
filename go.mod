@@ -3,6 +3,7 @@ module changeme
 go 1.18
 
 require (
+	github.com/google/uuid v1.3.0
 	github.com/ibm-messaging/mq-golang-jms20 v1.10.0
 	github.com/wailsapp/wails/v2 v2.7.1
 )
@@ -11,7 +12,6 @@ require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/ibm-messaging/mq-golang/v5 v5.3.2 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/labstack/echo/v4 v4.10.2 // indirect

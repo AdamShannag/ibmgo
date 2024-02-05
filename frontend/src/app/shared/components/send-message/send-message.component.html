@@ -5,8 +5,11 @@
     <p-button pRipple type="button" label="Send" icon="pi pi-send" (click)="sendMessage()" size="large"></p-button>
   </div>
 
-  <textarea rows="20" cols="30" pInputTextarea [(ngModel)]="message" [autoResize]="false" style="resize:none;"
-    placeholder="your message goes here!" (change)="updateRequestData()"></textarea>
+  <p-editor #editorRef [style]="{ height: '320px' }" [modules]="{toolbar:false}" (onTextChange)="updateText($event)">
+    <p-header>
+    </p-header>
+  </p-editor>
+
 </div>
 
 <div class="mt-4">

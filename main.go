@@ -2,6 +2,8 @@ package main
 
 import (
 	"changeme/mq"
+	"changeme/qmparser"
+	"changeme/types"
 	"embed"
 	"log"
 
@@ -21,13 +23,14 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
-var ibmmqConnectionsMap = map[mq.QueueChannel]jms20subset.JMSContext{}
+var ibmmqConnectionsMap = map[types.QueueChannel]jms20subset.JMSContext{}
 
 func main() {
 	// Create an instance of the app structure
 
 	app := NewApp(ibmmqConnectionsMap)
-	queue := mq.NewIbmMQ(ibmmqConnectionsMap)
+	parser := qmparser.NewParser()
+	queue := mq.NewIbmMQ(ibmmqConnectionsMap, parser)
 
 	// Create application with options
 	err := wails.Run(&options.App{

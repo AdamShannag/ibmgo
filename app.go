@@ -1,7 +1,7 @@
 package main
 
 import (
-	"changeme/mq"
+	"changeme/types"
 	"context"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
@@ -17,11 +17,11 @@ type ConnectionResponse struct {
 // App struct
 type App struct {
 	ctx         context.Context
-	connections map[mq.QueueChannel]jms20subset.JMSContext
+	connections map[types.QueueChannel]jms20subset.JMSContext
 }
 
 // NewApp creates a new App application struct
-func NewApp(connections map[mq.QueueChannel]jms20subset.JMSContext) *App {
+func NewApp(connections map[types.QueueChannel]jms20subset.JMSContext) *App {
 	return &App{connections: connections}
 }
 
@@ -51,7 +51,7 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, username, password string) ConnectionResponse {
-	queueChannel := mq.QueueChannel{
+	queueChannel := types.QueueChannel{
 		Queue:   queueName,
 		Channel: channeName,
 	}

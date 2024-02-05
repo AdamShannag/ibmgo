@@ -8,6 +8,8 @@ export const queueChannelConnectResolver: ResolveFn<QueueMangerConnectionData> =
   const channel = route.paramMap.get('channel')
   const queue = route.paramMap.get('queue')
 
+  // const d: QueueMangerConnectionData = { channel: { channelName: 'cahnnel', queues: [] }, queueManager: 'manager' }
+  // return d
   const data = ibmDataService.getQueueManagerConnectionData(queueManager!, channel!, queue!)!
   const clonedData = { ...data, channel: { ...data.channel } };
   clonedData.channel.queues = clonedData.channel.queues.filter(q => q.queueName === queue);

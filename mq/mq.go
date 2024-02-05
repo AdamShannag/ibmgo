@@ -1,39 +1,26 @@
 package mq
 
 import (
+	"changeme/qmparser"
+	"changeme/types"
 	"context"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 )
 
-type QueueChannel struct {
-	Queue   string
-	Channel string
-}
-
-type QueueMessage struct {
-	MessageID string
-	Timestamp int64
-	Data      string
-}
-
-type BrowseMessagesResponse struct {
-	Status   bool
-	Messages []QueueMessage
-}
-
 type IbmMQ struct {
 	ctx         context.Context
-	connections map[QueueChannel]jms20subset.JMSContext
+	connections map[types.QueueChannel]jms20subset.JMSContext
+	parser      qmparser.QueueMessageParser
 }
 
-// NewApp creates a new App application struct
-func NewIbmMQ(connections map[QueueChannel]jms20subset.JMSContext) *IbmMQ {
-	return &IbmMQ{connections: connections}
+func NewIbmMQ(connections map[types.QueueChannel]jms20subset.JMSContext, parser qmparser.QueueMessageParser) *IbmMQ {
+	return &IbmMQ{connections: connections, parser: parser}
 }
 
 func (a *IbmMQ) SendMessageToQueue(queueName, channelName, sendTo, message string) bool {
-	queueChannel := QueueChannel{
+	message = a.parser.ParseMessage(message)
+	queueChannel := types.QueueChannel{
 		Queue:   queueName,
 		Channel: channelName,
 	}
@@ -49,13 +36,13 @@ func (a *IbmMQ) SendMessageToQueue(queueName, channelName, sendTo, message strin
 	return true
 }
 
-func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) BrowseMessagesResponse {
+func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) types.BrowseMessagesResponse {
 
-	response := BrowseMessagesResponse{
+	response := types.BrowseMessagesResponse{
 		Status:   false,
 		Messages: nil,
 	}
-	queueChannel := QueueChannel{
+	queueChannel := types.QueueChannel{
 		Queue:   queueName,
 		Channel: channelName,
 	}
@@ -76,11 +63,11 @@ func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) BrowseMessag
 		return response
 	}
 
-	messages := []QueueMessage{}
+	messages := []types.QueueMessage{}
 
 	for msg, err := msgIterator.GetNext(); err == nil && msg != nil; {
 		textMsg := msg.(jms20subset.TextMessage)
-		m := QueueMessage{
+		m := types.QueueMessage{
 			MessageID: textMsg.GetJMSMessageID(),
 			Timestamp: textMsg.GetJMSTimestamp(),
 			Data:      *textMsg.GetText(),
@@ -98,7 +85,7 @@ func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) BrowseMessag
 
 func (a *IbmMQ) ConsumeAllMessages(queueName, channelName, from string) bool {
 
-	queueChannel := QueueChannel{
+	queueChannel := types.QueueChannel{
 		Queue:   queueName,
 		Channel: channelName,
 	}
