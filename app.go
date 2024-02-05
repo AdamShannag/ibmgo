@@ -52,8 +52,8 @@ func (a *App) shutdown(ctx context.Context) {
 
 func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, username, password string) ConnectionResponse {
 	queueChannel := types.QueueChannel{
-		Queue:   queueName,
-		Channel: channeName,
+		QueueManager: queueName,
+		Channel:      channeName,
 	}
 	if ok := ibmmqConnectionsMap[queueChannel]; ok != nil {
 		return ConnectionResponse{false, "Error", "Connection already exists!"}

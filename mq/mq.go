@@ -18,14 +18,9 @@ func NewIbmMQ(connections map[types.QueueChannel]jms20subset.JMSContext, parser 
 	return &IbmMQ{connections: connections, parser: parser}
 }
 
-func (a *IbmMQ) SendMessageToQueue(queueName, channelName, sendTo, message string) bool {
-	message = a.parser.ParseMessage(message)
-	queueChannel := types.QueueChannel{
-		Queue:   queueName,
-		Channel: channelName,
-	}
-	jms := a.connections[queueChannel]
-	queue := jms.CreateQueue(sendTo)
+func (q *IbmMQ) SendMessageToQueue(queueManager, channelName, sendTo, message string) bool {
+	message = q.parser.ParseMessage(message)
+	jms, queue := q.getJmsAndQueue(queueManager, channelName, sendTo)
 
 	msg1 := jms.CreateTextMessageWithString(message)
 
@@ -36,18 +31,38 @@ func (a *IbmMQ) SendMessageToQueue(queueName, channelName, sendTo, message strin
 	return true
 }
 
-func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) types.BrowseMessagesResponse {
+func (q *IbmMQ) SendBulkToQueue(queueManager, channelName, sendTo, message string, amount int) bool {
+	jms, queue := q.getJmsAndQueue(queueManager, channelName, sendTo)
+
+	doneCh := make(chan error, amount)
+
+	for i := 0; i < amount; i++ {
+		go func(msg string) {
+			parsedMessage := q.parser.ParseMessage(msg)
+			msgToSend := jms.CreateTextMessageWithString(parsedMessage)
+			err := jms.CreateProducer().Send(queue, msgToSend)
+			doneCh <- err
+		}(message)
+	}
+
+	var failed bool
+	for i := 0; i < amount; i++ {
+		err := <-doneCh
+		if err != nil {
+			failed = true
+		}
+	}
+
+	return !failed
+}
+
+func (q *IbmMQ) BrowseMessages(queueManager, channelName, from string) types.BrowseMessagesResponse {
+	jms, queue := q.getJmsAndQueue(queueManager, channelName, from)
 
 	response := types.BrowseMessagesResponse{
 		Status:   false,
 		Messages: nil,
 	}
-	queueChannel := types.QueueChannel{
-		Queue:   queueName,
-		Channel: channelName,
-	}
-	jms := a.connections[queueChannel]
-	queue := jms.CreateQueue(from)
 
 	browser, errCons := jms.CreateBrowser(queue)
 	if browser != nil {
@@ -83,19 +98,13 @@ func (a *IbmMQ) BrowseMessages(queueName, channelName, from string) types.Browse
 
 }
 
-func (a *IbmMQ) ConsumeAllMessages(queueName, channelName, from string) bool {
+func (q *IbmMQ) ConsumeAllMessages(queueManager, channelName, from string) bool {
+	jms, queue := q.getJmsAndQueue(queueManager, channelName, from)
 
-	queueChannel := types.QueueChannel{
-		Queue:   queueName,
-		Channel: channelName,
-	}
-	jms := a.connections[queueChannel]
-	queue := jms.CreateQueue(from)
+	consumer, err := jms.CreateConsumer(queue)
 
-	j, err := jms.CreateConsumer(queue)
-
-	if j != nil {
-		defer j.Close()
+	if consumer != nil {
+		defer consumer.Close()
 	}
 
 	if err != nil {
@@ -103,7 +112,7 @@ func (a *IbmMQ) ConsumeAllMessages(queueName, channelName, from string) bool {
 	}
 
 	for {
-		m, err := j.ReceiveNoWait()
+		m, err := consumer.ReceiveNoWait()
 		if err != nil {
 			return false
 		}
@@ -111,4 +120,13 @@ func (a *IbmMQ) ConsumeAllMessages(queueName, channelName, from string) bool {
 			return true
 		}
 	}
+}
+
+func (q *IbmMQ) getJmsAndQueue(queueManager, channelName, queue string) (jms20subset.JMSContext, jms20subset.Queue) {
+	queueChannel := types.QueueChannel{
+		QueueManager: queueManager,
+		Channel:      channelName,
+	}
+	jms := q.connections[queueChannel]
+	return jms, jms.CreateQueue(queue)
 }

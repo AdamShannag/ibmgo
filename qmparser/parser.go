@@ -3,6 +3,7 @@ package qmparser
 import (
 	"bytes"
 	"log"
+	"math/rand"
 	"strings"
 	"text/template"
 	"time"
@@ -53,6 +54,16 @@ func (q queueMessageParserImpl) Date(format string) string {
 	formattedDate = replacePlaceholder(formattedDate, "dd", day)
 
 	return formattedDate
+}
+
+func (q queueMessageParserImpl) RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[randGen.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func replacePlaceholder(format, placeholder, value string) string {

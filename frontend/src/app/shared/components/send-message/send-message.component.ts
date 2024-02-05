@@ -23,7 +23,7 @@ export type QueueMessageEvent = {
   styleUrl: './send-message.component.scss'
 })
 export class SendMessageComponent {
-  allowedCommands = ['UUID', `Date "yyyy-MM-dd"`, `Date "yyMMdd"`, `Date "yy/MM/dd"`]; // Add your specific words here
+  allowedCommands = ['UUID', `Date "yyyy-MM-dd"`, `Date "yyMMdd"`, `Date "yy/MM/dd"`, 'RandomString $']; // Add your specific words here
 
   @ViewChild('editorRef') editorComponent!: Editor;
 
@@ -40,6 +40,13 @@ export class SendMessageComponent {
   request = ''
   text = ''
 
+  numberOfMessages: number | undefined;
+
+  sendButtonDisabled = false
+  refreshButtonDisabled = false
+  clearButtonDisabled = false
+
+
   queueMessages = signal<QueueMessage[]>([]);
 
   @Output() toastMessageEvent = new EventEmitter<Message>();
@@ -47,7 +54,12 @@ export class SendMessageComponent {
   constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService) { }
 
   sendMessage() {
-    this.ibmGoApiService.sendMessageToQueue(this.queueManager, this.channelName, this.queue, this.text).finally()
+    this.sendButtonDisabled = true;
+    if (!this.numberOfMessages)
+      this.numberOfMessages = 1
+    this.ibmGoApiService.sendBulkToQueue(this.queueManager, this.channelName, this.queue, this.text, this.numberOfMessages).then(() => {
+      this.sendButtonDisabled = false;
+    })
   }
 
   refreshMessages() {
@@ -55,7 +67,11 @@ export class SendMessageComponent {
       this.toastMessageEvent.emit({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Field: Queue name is empty!' });
       return
     }
-    this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
+    this.refreshButtonDisabled = true;
+    this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => {
+      this.queueMessages.update(items => messages)
+      this.refreshButtonDisabled = false;
+    })
   }
 
   clearQueues() {
@@ -63,8 +79,12 @@ export class SendMessageComponent {
       this.toastMessageEvent.emit({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Field: Queue name is empty!' });
       return
     }
+    this.clearButtonDisabled = true
     this.ibmGoApiService.consumeAllMessages(this.queueManager, this.channelName, this.queue).then(_ => {
-      this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => this.queueMessages.update(items => messages))
+      this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => {
+        this.queueMessages.update(items => messages)
+        this.clearButtonDisabled = false
+      })
     })
   }
 
@@ -76,6 +96,7 @@ export class SendMessageComponent {
     const quill = this.editorComponent.getQuill() as Quill; // Assuming this.editorComponent is your ViewChild reference
     const text = quill.getText();
     const regex = /\{\{\.(.*?)\}\}/g;// Regular expression to find text within {{}}
+
     let match;
 
     while ((match = regex.exec(text)) !== null) {
@@ -83,12 +104,14 @@ export class SendMessageComponent {
       const startPosition = match.index; // Move past the opening {{
       const length = match[1].length + 5; // Length of the matched group inside braces
 
-      if (this.allowedCommands.includes(matchedWord)) {
+      console.log(matchedWord.replace(/"\d+"/g, "$"))
+
+      if (this.allowedCommands.includes(matchedWord) || this.allowedCommands.includes(matchedWord.replace(/\d+/g, "$"))) {
         // Apply italic style and orange color only to the text inside {{}}
-        quill.formatText(startPosition, length, { 'italic': true, 'color': 'orange', 'code': true, 'underline': false, 'background': '#17202A' });
+        quill.formatText(startPosition, length, { 'italic': true, 'color': '#ba68c8', 'code': true, 'underline': false, 'background': '#17202A' });
         quill.removeFormat(startPosition + length, length)
       } else {
-        quill.formatText(startPosition, length, { 'italic': false, 'color': 'red', 'code': false, 'underline': true });
+        quill.formatText(startPosition, length, { 'italic': false, 'color': '#f48fb1', 'code': false, 'underline': true });
         quill.removeFormat(startPosition + length, length)
       }
     }

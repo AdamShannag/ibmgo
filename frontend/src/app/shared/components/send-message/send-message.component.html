@@ -2,7 +2,10 @@
   <div class="flex justify-content-center gap-3">
     <input pInputText type="text" placeholder="Queue name" [(ngModel)]="queue" [disabled]="true"
       class="p-inputtext-lg w-full" />
-    <p-button pRipple type="button" label="Send" icon="pi pi-send" (click)="sendMessage()" size="large"></p-button>
+    <input pInputText type="number" placeholder="Number of messages" class="p-inputtext-lg"
+      [(ngModel)]="numberOfMessages" />
+    <p-button pRipple type="button" label="Send" icon="pi pi-send" (click)="sendMessage()" size="large"
+      [disabled]="sendButtonDisabled"></p-button>
   </div>
 
   <p-editor #editorRef [style]="{ height: '320px' }" [modules]="{toolbar:false}" (onTextChange)="updateText($event)">
@@ -13,18 +16,19 @@
 </div>
 
 <div class="mt-4">
-  <p-table [value]="queueMessages()" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+  <p-table [value]="queueMessages()" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[5, 10, 20]"
+    styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template pTemplate="caption">
       <div class="flex justify-content-center align-content-center h-2rem">
         <h3 class="w-full text-400">Messages</h3>
         <div class="flex justify-content-end">
           <p-button icon="pi pi-trash" [rounded]="true" [text]="true" [raised]="false" severity="danger"
-            (onClick)="clearQueues()"></p-button>
+            (onClick)="clearQueues()" [disabled]="clearButtonDisabled"></p-button>
           <p-button icon="pi pi-refresh" [rounded]="true" [text]="true" [raised]="false" severity="info"
-            (onClick)="refreshMessages()"></p-button>
+            (onClick)="refreshMessages()" [disabled]="refreshButtonDisabled"></p-button>
         </div>
       </div>
-
     </ng-template>
     <ng-template pTemplate="header">
       <tr>
@@ -39,17 +43,6 @@
         <td>{{ message.MessageID }}</td>
         <td>{{ message.Data }}</td>
       </tr>
-
     </ng-template>
-    <ng-template pTemplate="summary">
-      @if(queueMessages().length ===0){ <p class="text-center">You don't currently have any messages to display</p>
-      }@else {
-      <div class="text-center">
-        Total: {{queueMessages() ? queueMessages().length : 0 }} messages.
-      </div>
-      }
-
-    </ng-template>
-
   </p-table>
 </div>

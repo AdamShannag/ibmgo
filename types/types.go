@@ -1,8 +1,8 @@
 package types
 
 type QueueChannel struct {
-	Queue   string
-	Channel string
+	QueueManager string
+	Channel      string
 }
 
 type QueueMessage struct {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BrowseMessages, ConsumeAllMessages, SendMessageToQueue } from '../../../../wailsjs/go/mq/IbmMQ';
+import { BrowseMessages, ConsumeAllMessages, SendBulkToQueue, SendMessageToQueue } from '../../../../wailsjs/go/mq/IbmMQ';
 import { MessageService } from 'primeng/api';
 import { CreateIbmmqConnection } from '../../../../wailsjs/go/main/App';
 
@@ -64,6 +64,15 @@ export class IbmGoApiService {
       return
     }
     this.messageService.add({ key: 'queue', severity: 'success', summary: 'Sent!', detail: 'Message sent' });
+  }
+
+  async sendBulkToQueue(queueManager: string, channelName: string, queue: string, message: string, amount: number) {
+    const sendResponse = await SendBulkToQueue(queueManager, channelName, queue, message, amount)
+    if (!sendResponse) {
+      this.messageService.add({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Something went wrong!' });
+      return
+    }
+    this.messageService.add({ key: 'queue', severity: 'success', summary: 'Sent!', detail: `${amount} Message/s sent!` });
   }
 
 }
