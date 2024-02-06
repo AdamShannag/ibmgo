@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, signal } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,7 +22,7 @@ export type QueueMessageEvent = {
   templateUrl: './send-message.component.html',
   styleUrl: './send-message.component.scss'
 })
-export class SendMessageComponent {
+export class SendMessageComponent implements AfterViewInit {
   allowedCommands = ['UUID', `Date "yyyy-MM-dd"`, `Date "yyMMdd"`, `Date "yy/MM/dd"`, 'RandomString $']; // Add your specific words here
 
   @ViewChild('editorRef') editorComponent!: Editor;
@@ -52,6 +52,12 @@ export class SendMessageComponent {
   @Output() toastMessageEvent = new EventEmitter<Message>();
 
   constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService) { }
+
+  ngAfterViewInit(): void {
+    const quill = this.editorComponent.getQuill() as Quill;
+    quill.setText(this.message)
+    this.formatText()
+  }
 
   sendMessage() {
     this.sendButtonDisabled = true;
@@ -93,6 +99,12 @@ export class SendMessageComponent {
   }
 
   updateText(event: EditorTextChangeEvent) {
+    this.formatText()
+    this.text = event.textValue
+    this.ibmDataService.saveMessageToQueueRequest(this.queueManager, this.channelName, this.queue, this.request, event.textValue)
+  }
+
+  formatText() {
     const quill = this.editorComponent.getQuill() as Quill; // Assuming this.editorComponent is your ViewChild reference
     const text = quill.getText();
     const regex = /\{\{\.(.*?)\}\}/g;// Regular expression to find text within {{}}
@@ -115,9 +127,6 @@ export class SendMessageComponent {
         quill.removeFormat(startPosition + length, length)
       }
     }
-
-    this.text = event.textValue
-    this.ibmDataService.saveMessageToQueueRequest(this.queueManager, this.channelName, this.queue, this.request, event.textValue)
 
   }
 }

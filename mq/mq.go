@@ -1,9 +1,10 @@
 package mq
 
 import (
-	"changeme/qmparser"
-	"changeme/types"
 	"context"
+
+	"github.com/AdamShannag/qmparser"
+	"github.com/AdamShannag/types"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 )

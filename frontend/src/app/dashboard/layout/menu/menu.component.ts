@@ -5,8 +5,10 @@ import { MenuItemComponent } from '../menu-item/menu-item.component';
 import { MenuItem } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NewConnectionDialogComponent } from '../../../shared/components/new-connection-dialog/new-connection-dialog.component';
-import { IbmmqDataService, QueueChannelData, QueueMangerConnectionData } from '../../../shared/services/ibmmq.data.service';
+import { IbmmqDataService } from '../../../shared/services/ibmmq.data.service';
 import { NewQueueDialogComponent } from '../../../shared/components/new-queue-dialog/new-queue-dialog.component';
+import { model } from '../../../../../wailsjs/go/models';
+import { GetAll } from '../../../../../wailsjs/go/store/queueStore';
 
 @Component({
   selector: 'app-menu',
@@ -19,36 +21,51 @@ export class MenuComponent implements OnInit {
   model: MenuItem[] = [];
   ref: DynamicDialogRef | undefined;
 
+
   constructor(public layoutService: DashboardLayoutService, private dialogService: DialogService, private ibmmqService: IbmmqDataService) {
+
   }
 
 
-  menuItems(): MenuItem[] {
-    return this.ibmmqService.queues().map(queueManager => ({
-      label: queueManager.queueManager,
-      icon: 'pi pi-envelope',
-      items: queueManager.data.map(queueData => ({
-        label: queueData.channel.channelName,
-        icon: 'pi pi-box',
-        items: this.constructQueueItems(queueManager.queueManager, queueData.channel)
-      }))
-    }));
+  async menuItems(): Promise<MenuItem[]> {
+    const result = await GetAll();
+    const menuItemsPromises = result.map(async (queueManager) => {
+      const channels = await this.ibmmqService.getChannels(queueManager.name);
+      const itemsPromises = channels.map(async (chan) => {
+        const queueItems = await this.constructQueueItems(queueManager.name, chan.name);
+        return {
+          label: chan.name,
+          icon: 'pi pi-box',
+          items: queueItems
+        };
+      });
+      const items = await Promise.all(itemsPromises);
+      return {
+        label: queueManager.name,
+        icon: 'pi pi-envelope',
+        items: items
+      };
+    });
+
+    const m = await Promise.all(menuItemsPromises);
+    return m;
   }
 
-  private constructQueueItems(queueManager: string, channel: QueueChannelData): MenuItem[] {
-    const queueItems = channel.queues.map(queue => ({
-      label: queue.queueName,
-      icon: 'pi pi-box',
-      routerLink: ['queue', queueManager, channel.channelName, queue.queueName]
-    }));
+  private async constructQueueItems(queueManager: string, channel: string): Promise<MenuItem[]> {
+    const queueItems = await this.ibmmqService.getQueues(queueManager, channel)
+    const convertedItems = queueItems.map(q => ({
+      label: q.name,
+      icon: 'pi pi-plus',
+      routerLink: ['queue', queueManager, channel, q.name]
+    }))
 
     const newQueueItem = {
       label: 'New Queue',
       icon: 'pi pi-plus',
-      command: () => this.openNewQueueDialog(queueManager, channel.channelName)
+      command: () => this.openNewQueueDialog(queueManager, channel)
     };
 
-    return [newQueueItem, ...queueItems];
+    return [newQueueItem, ...convertedItems];
   }
 
   private openNewQueueDialog(queueManager: string, channelName: string): void {
@@ -62,8 +79,8 @@ export class MenuComponent implements OnInit {
 
     ref.onClose.subscribe((queueName: string) => {
       if (queueName) {
-        this.ibmmqService.addQueueToChannel(queueManager, channelName, queueName);
-        this.addQueueMenuItem(queueName, queueManager, channelName)
+        this.ibmmqService.addQueueToChannel(queueManager, channelName, queueName)
+          .then(() => this.addQueueMenuItem(queueName, queueManager, channelName));
       }
     });
   }
@@ -102,10 +119,12 @@ export class MenuComponent implements OnInit {
                 maximizable: false
               });
 
-              this.ref.onClose.subscribe((queueInfo: QueueMangerConnectionData) => {
+              this.ref.onClose.subscribe((queueInfo: model.QueueManager) => {
                 if (queueInfo) {
                   this.ibmmqService.addQueueData(queueInfo)
-                  this.model[1].items = this.menuItems()
+                  this.menuItems().then(r => {
+                    this.model[1].items = r
+                  })
                 }
               });
             }
@@ -116,5 +135,9 @@ export class MenuComponent implements OnInit {
         label: 'Connections',
       },
     ];
+
+    this.menuItems().then(r => {
+      this.model[1].items = r
+    })
   }
 }

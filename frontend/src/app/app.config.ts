@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { BrowserModule, provideClientHydration } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,5 +25,6 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimations(),
     MessageService,
+    ConfirmationService,
   ]
 };

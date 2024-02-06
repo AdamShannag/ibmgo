@@ -6,8 +6,8 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
-import { QueueMangerConnectionData } from '../../services/ibmmq.data.service';
 import { IbmGoApiService } from '../../services/ibm.go.api.service';
+import { model } from '../../../../../wailsjs/go/models';
 
 @Component({
   selector: 'app-new-connection-dialog',
@@ -33,16 +33,29 @@ export class NewConnectionDialogComponent {
       return
     }
 
-    const data: QueueMangerConnectionData = {
-      queueManager: this.formGroup.value['queue'],
-      hostname: this.formGroup.value['hostname'],
-      channel: { channelName: this.formGroup.value['channel'], queues: [] },
-      port: this.formGroup.value['port'],
-      username: this.formGroup.value['username'],
-      password: this.formGroup.value['password'],
-    }
+    const connectionDetails = new model.ConnectionData()
 
-    this.ibmGoApiService.connectToIbmmq(data.port!, data.queueManager, data.hostname!, data.channel.channelName, data.username!, data.password!)
+    connectionDetails.hostname = this.formGroup.value['hostname']
+    connectionDetails.password = this.formGroup.value['password']
+    connectionDetails.port = this.formGroup.value['port']
+    connectionDetails.username = this.formGroup.value['username']
+
+    const queueMap: { [key: string]: model.Queue } = {}
+
+    const channel = new model.Channel()
+    channel.name = this.formGroup.value['channel']
+    channel.queues = queueMap
+
+
+    const chanMap: { [key: string]: model.Channel } = {}
+    chanMap[channel.name] = channel
+
+    const data = new model.QueueManager()
+    data.name = this.formGroup.value['queue'];
+    data.connection_settings = connectionDetails;
+    data.channels = chanMap
+
+    this.ibmGoApiService.connectToIbmmq(this.formGroup.value['port'], this.formGroup.value['queue'], this.formGroup.value['hostname'], this.formGroup.value['channel'], this.formGroup.value['username'], this.formGroup.value['password'])
       .then(connected => {
         if (!connected) return
         this.ref.close(data)

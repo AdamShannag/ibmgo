@@ -1,11 +1,14 @@
 package main
 
 import (
-	"changeme/mq"
-	"changeme/qmparser"
-	"changeme/types"
 	"embed"
 	"log"
+
+	"github.com/AdamShannag/mq"
+	"github.com/AdamShannag/qmparser"
+	"github.com/AdamShannag/store"
+	"github.com/AdamShannag/types"
+	"github.com/boltdb/bolt"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 	"github.com/wailsapp/wails/v2"
@@ -24,16 +27,21 @@ var assets embed.FS
 var icon []byte
 
 var ibmmqConnectionsMap = map[types.QueueChannel]jms20subset.JMSContext{}
+var db *bolt.DB
 
 func main() {
 	// Create an instance of the app structure
-
+	db, err := bolt.Open("./ibmgo.db", 0644, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	queueStore := store.NewQueueStore(db)
 	app := NewApp(ibmmqConnectionsMap)
 	parser := qmparser.NewParser()
 	queue := mq.NewIbmMQ(ibmmqConnectionsMap, parser)
 
 	// Create application with options
-	err := wails.Run(&options.App{
+	err = wails.Run(&options.App{
 		Title:             "ibmgo",
 		Width:             1440,
 		Height:            900,
@@ -59,7 +67,7 @@ func main() {
 		OnShutdown:       app.shutdown,
 		WindowStartState: options.Normal,
 		Bind: []interface{}{
-			app, queue,
+			app, queue, queueStore,
 		},
 		Linux: &linux.Options{
 			Icon: icon,

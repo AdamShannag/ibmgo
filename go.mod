@@ -1,8 +1,9 @@
-module changeme
+module github.com/AdamShannag
 
-go 1.18
+go 1.20
 
 require (
+	github.com/boltdb/bolt v1.3.1
 	github.com/google/uuid v1.3.0
 	github.com/ibm-messaging/mq-golang-jms20 v1.10.0
 	github.com/wailsapp/wails/v2 v2.7.1

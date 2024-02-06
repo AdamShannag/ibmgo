@@ -1,8 +1,9 @@
 package main
 
 import (
-	"changeme/types"
 	"context"
+
+	"github.com/AdamShannag/types"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 	"github.com/ibm-messaging/mq-golang-jms20/mqjms"
@@ -48,6 +49,7 @@ func (a *App) shutdown(ctx context.Context) {
 	for _, v := range a.connections {
 		v.Close()
 	}
+	db.Close()
 }
 
 func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, username, password string) ConnectionResponse {

@@ -1,10 +1,14 @@
-import { Component, Signal, computed } from '@angular/core';
+import { Component } from '@angular/core';
 import { DashboardLayoutService } from '../service/layout.service';
 import { MenuService } from '../service/menu.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
+import { IbmmqDataService } from '../../../shared/services/ibmmq.data.service';
+import { Router } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-config',
@@ -15,14 +19,18 @@ import { SidebarModule } from 'primeng/sidebar';
     FormsModule,
     SidebarModule,
     ButtonModule,
-  ]
+    ConfirmDialogModule
+  ],
 })
 export class AppConfigComponent {
-  scales: number[] = [12, 13, 14, 15, 16];
+  disabled: boolean = false
 
   constructor(
     public layoutService: DashboardLayoutService,
     public menuService: MenuService,
+    private ibmmqDataService: IbmmqDataService,
+    private router: Router,
+    private confirmationService: ConfirmationService,
   ) { }
 
   get visible(): boolean {
@@ -33,29 +41,25 @@ export class AppConfigComponent {
     this.layoutService.state.configSidebarVisible = _val;
   }
 
-  get scale(): number {
-    return this.layoutService.config().scale;
-  }
+  wipeData() {
+    this.confirmationService.confirm({
+      message: 'Do you want to wipe out all data?',
+      header: 'Wipe Out Confirmation',
+      icon: 'pi pi-exclamation-circle',
+      acceptButtonStyleClass: "p-button-danger p-button-text",
+      rejectButtonStyleClass: "p-button-text p-button-text",
+      acceptIcon: "none",
+      rejectIcon: "none",
 
-  set scale(_val: number) {
-    this.layoutService.config().scale = _val;
-  }
-
-  decrementScale() {
-    this.scale--;
-    this.applyScale();
-  }
-
-  incrementScale() {
-    this.scale++;
-    this.applyScale();
-  }
-
-  applyScale() {
-    this.layoutService.config.update((config) => ({
-      ...config,
-      scale: this.scale,
-    }));
+      accept: () => {
+        this.ibmmqDataService.wipeData().then(r => {
+          this.router.navigateByUrl('/')
+          location.reload()
+        })
+      },
+      reject: () => {
+      }
+    });
   }
 
   sidebarPosition(): string {
