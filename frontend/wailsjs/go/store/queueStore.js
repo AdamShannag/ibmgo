@@ -10,6 +10,14 @@ export function CreateQueueManager(arg1) {
   return window['go']['store']['queueStore']['CreateQueueManager'](arg1);
 }
 
+export function DeleteQueue(arg1, arg2, arg3) {
+  return window['go']['store']['queueStore']['DeleteQueue'](arg1, arg2, arg3);
+}
+
+export function DeleteRequest(arg1, arg2, arg3, arg4) {
+  return window['go']['store']['queueStore']['DeleteRequest'](arg1, arg2, arg3, arg4);
+}
+
 export function GetAll() {
   return window['go']['store']['queueStore']['GetAll']();
 }

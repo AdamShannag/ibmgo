@@ -4,11 +4,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
-import { Message } from 'primeng/api';
+import { ConfirmationService, Message } from 'primeng/api';
 import { IbmGoApiService, QueueMessage } from '../../services/ibm.go.api.service';
 import { IbmmqDataService } from '../../services/ibmmq.data.service';
 import { Editor, EditorModule, EditorTextChangeEvent } from 'primeng/editor';
 import Quill from 'quill';
+import { DeleteRequest } from '../../../../../wailsjs/go/store/queueStore';
 
 export type QueueMessageEvent = {
   queue: string;
@@ -40,6 +41,8 @@ export class SendMessageComponent implements AfterViewInit {
   request = ''
   text = ''
 
+  @Output() deleteRequestEvent = new EventEmitter<boolean>();
+
   numberOfMessages: number | undefined;
 
   sendButtonDisabled = false
@@ -51,7 +54,7 @@ export class SendMessageComponent implements AfterViewInit {
 
   @Output() toastMessageEvent = new EventEmitter<Message>();
 
-  constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService) { }
+  constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService, private confirmationService: ConfirmationService) { }
 
   ngAfterViewInit(): void {
     const quill = this.editorComponent.getQuill() as Quill;
@@ -127,6 +130,23 @@ export class SendMessageComponent implements AfterViewInit {
         quill.removeFormat(startPosition + length, length)
       }
     }
+  }
 
+  deleteMessage() {
+    this.confirmationService.confirm({
+      message: `Do you want to proceed with deleting "${this.request}" request?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-circle',
+      acceptButtonStyleClass: "p-button-danger p-button-text",
+      rejectButtonStyleClass: "p-button-text p-button-text",
+      acceptIcon: "none",
+      rejectIcon: "none",
+
+      accept: () => {
+        DeleteRequest(this.queueManager, this.channelName, this.queue, this.request).then(() => {
+          this.deleteRequestEvent.emit(true)
+        })
+      }
+    });
   }
 }

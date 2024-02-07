@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 
+	"github.com/AdamShannag/model"
+	"github.com/AdamShannag/mqcon"
 	"github.com/AdamShannag/types"
 
-	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 	"github.com/ibm-messaging/mq-golang-jms20/mqjms"
 )
 
@@ -17,13 +18,12 @@ type ConnectionResponse struct {
 
 // App struct
 type App struct {
-	ctx         context.Context
-	connections map[types.QueueChannel]jms20subset.JMSContext
+	ctx context.Context
 }
 
 // NewApp creates a new App application struct
-func NewApp(connections map[types.QueueChannel]jms20subset.JMSContext) *App {
-	return &App{connections: connections}
+func NewApp() *App {
+	return &App{}
 }
 
 // startup is called at application startup
@@ -46,10 +46,9 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 
 // shutdown is called at application termination
 func (a *App) shutdown(ctx context.Context) {
-	for _, v := range a.connections {
+	for _, v := range mqcon.Get() {
 		v.Close()
 	}
-	db.Close()
 }
 
 func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, username, password string) ConnectionResponse {
@@ -57,7 +56,7 @@ func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, u
 		QueueManager: queueName,
 		Channel:      channeName,
 	}
-	if ok := ibmmqConnectionsMap[queueChannel]; ok != nil {
+	if ok := mqcon.Get()[queueChannel]; ok != nil {
 		return ConnectionResponse{false, "Error", "Connection already exists!"}
 	}
 
@@ -76,8 +75,24 @@ func (a *App) CreateIbmmqConnection(port int, queueName, hostname, channeName, u
 		return ConnectionResponse{false, errCtx.GetErrorCode(), errCtx.GetReason()}
 	}
 
-	ibmmqConnectionsMap[queueChannel] = context
+	mqcon.Set(queueChannel, context)
 
 	return ConnectionResponse{true, "", ""}
+}
 
+func (a *App) ConnectToIbmmq(queueName, channeName string, connectionDetails model.ConnectionData) bool {
+	queueChannel := types.QueueChannel{
+		QueueManager: queueName,
+		Channel:      channeName,
+	}
+	if ok := mqcon.Get()[queueChannel]; ok != nil {
+		return true
+	}
+
+	cr := a.CreateIbmmqConnection(connectionDetails.Port, queueName, connectionDetails.Hostname, channeName, connectionDetails.Username, connectionDetails.Password)
+	if cr.Status {
+		return true
+	}
+
+	return false
 }

@@ -53,8 +53,9 @@ export class AppConfigComponent {
 
       accept: () => {
         this.ibmmqDataService.wipeData().then(r => {
-          this.router.navigateByUrl('/')
-          location.reload()
+          this.router.navigateByUrl('/').then(() => {
+            location.reload()
+          })
         })
       },
       reject: () => {

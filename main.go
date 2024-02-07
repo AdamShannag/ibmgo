@@ -7,10 +7,8 @@ import (
 	"github.com/AdamShannag/mq"
 	"github.com/AdamShannag/qmparser"
 	"github.com/AdamShannag/store"
-	"github.com/AdamShannag/types"
 	"github.com/boltdb/bolt"
 
-	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -26,19 +24,19 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
-var ibmmqConnectionsMap = map[types.QueueChannel]jms20subset.JMSContext{}
 var db *bolt.DB
 
 func main() {
 	// Create an instance of the app structure
-	db, err := bolt.Open("./ibmgo.db", 0644, nil)
+	db, err := bolt.Open("/usr/bin/ibmgo/ibmgo.db", 0644, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	queueStore := store.NewQueueStore(db)
-	app := NewApp(ibmmqConnectionsMap)
+	app := NewApp()
 	parser := qmparser.NewParser()
-	queue := mq.NewIbmMQ(ibmmqConnectionsMap, parser)
+	queue := mq.NewIbmMQ(parser)
 
 	// Create application with options
 	err = wails.Run(&options.App{

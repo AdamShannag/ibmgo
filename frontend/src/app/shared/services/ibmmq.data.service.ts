@@ -32,8 +32,8 @@ export class IbmmqDataService {
   readonly queues = this.queuesDataSginal.asReadonly()
 
 
-  addQueueData(data: model.QueueManager) {
-    CreateQueueManager(data).then(queueManager => {
+  async addQueueData(data: model.QueueManager) {
+    await CreateQueueManager(data).then(queueManager => {
       let qm = new model.QueueManager()
       qm.name = queueManager.name
       qm.channels = queueManager.channels
@@ -59,7 +59,7 @@ export class IbmmqDataService {
     this.updateDataSignal()
   }
 
-  async getQueueManagerConnectionData(queueManager: string, channelName: string, queueName: string) {
+  async getQueueData(queueManager: string, channelName: string, queueName: string) {
     return await GetQueue(queueManager, channelName, queueName)
   }
 

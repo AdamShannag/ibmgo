@@ -1,4 +1,3 @@
-<p-toast key="queue"></p-toast>
 <div class="grid">
   <div class="col-6">
     <div class="card mb-0">
@@ -31,14 +30,18 @@
 
 </div>
 <div class="card mb-4">
-  <h3 class="text-400">Requests</h3>
+  <div class="flex justify-content-between">
+    <h3 class="text-400">Requests</h3>
+    <p-button pRipple type="button" label="Remove Queue" severity="danger" (click)="deleteQueue()"
+      size="large"></p-button>
+  </div>
   <p-divider></p-divider>
   <p-tabView>
     @for(tab of tabs;track tab.title){
-    <p-tabPanel [header]="tab.title" [closable]="true" [selected]="tab.selected">
+    <p-tabPanel [header]="tab.title" [closable]="false" [selected]="tab.selected">
       <app-send-message (toastMessageEvent)="showToastMessage($event)" [channelName]="channelName"
-        [queueManager]="queueManager" [queue]="queue" [request]="tab.title"
-        [message]="tab.messageContent"></app-send-message>
+        [queueManager]="queueManager" [queue]="queue" [request]="tab.title" [message]="tab.messageContent"
+        (deleteRequestEvent)="closeTab()"></app-send-message>
     </p-tabPanel>
     }
     <p-tabPanel #tab>
@@ -46,7 +49,8 @@
         <i class="pi pi-plus"></i>
       </ng-template>
       <div class="flex justify-content-center gap-3">
-        <input pInputText type="text" placeholder="Request name" [(ngModel)]="newTab" class="p-inputtext-lg w-full" />
+        <input pInputText type="text" placeholder="Request name" [(ngModel)]="newTab" class="p-inputtext-lg w-full"
+          (keyup.enter)="addTab(tab)" />
         <p-button pRipple type="button" label="Add" icon="pi pi-plus" severity="success" (click)="addTab(tab)"
           size="large"></p-button>
       </div>

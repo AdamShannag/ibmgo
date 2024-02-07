@@ -55,7 +55,7 @@ export class MenuComponent implements OnInit {
     const queueItems = await this.ibmmqService.getQueues(queueManager, channel)
     const convertedItems = queueItems.map(q => ({
       label: q.name,
-      icon: 'pi pi-plus',
+      icon: 'pi pi-send',
       routerLink: ['queue', queueManager, channel, q.name]
     }))
 
@@ -121,9 +121,10 @@ export class MenuComponent implements OnInit {
 
               this.ref.onClose.subscribe((queueInfo: model.QueueManager) => {
                 if (queueInfo) {
-                  this.ibmmqService.addQueueData(queueInfo)
-                  this.menuItems().then(r => {
-                    this.model[1].items = r
+                  this.ibmmqService.addQueueData(queueInfo).then(() => {
+                    this.menuItems().then(r => {
+                      this.model[1].items = r
+                    })
                   })
                 }
               });

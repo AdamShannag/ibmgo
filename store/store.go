@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AdamShannag/model"
+	"github.com/AdamShannag/mqcon"
 
 	"github.com/boltdb/bolt"
 )
@@ -117,6 +118,9 @@ func (s *queueStore) GetAll() []model.QueueManager {
 	s.db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket(queueManagerBucket)
+		if b == nil {
+			return nil
+		}
 
 		c := b.Cursor()
 		var queueManager model.QueueManager
@@ -204,12 +208,48 @@ func (s *queueStore) GetQueues(queueManager, channel string) ([]model.Queue, err
 	return queues, nil
 }
 
+func (s *queueStore) DeleteRequest(queueManager, channel, queue, request string) error {
+	qm, err := s.GetQueueManager(queueManager)
+	if err != nil {
+		return err
+	}
+
+	delete(qm.Channels[channel].Queues[queue].Requests, request)
+
+	_, err = s.CreateQueueManager(qm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *queueStore) DeleteQueue(queueManager, channel, queue string) error {
+	qm, err := s.GetQueueManager(queueManager)
+	if err != nil {
+		return err
+	}
+
+	delete(qm.Channels[channel].Queues, queue)
+
+	_, err = s.CreateQueueManager(qm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *queueStore) WipeData() error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		err := tx.DeleteBucket(queueManagerBucket)
 		if err != nil {
 			return err
 		}
+		for _, v := range mqcon.Get() {
+			v.Close()
+		}
+		mqcon.Reset()
 		return nil
 	})
 }

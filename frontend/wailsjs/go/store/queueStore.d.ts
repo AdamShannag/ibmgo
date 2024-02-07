@@ -6,6 +6,10 @@ export function AddQueueToChannel(arg1:string,arg2:string,arg3:model.Queue):Prom
 
 export function CreateQueueManager(arg1:model.QueueManager):Promise<model.QueueManager>;
 
+export function DeleteQueue(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function DeleteRequest(arg1:string,arg2:string,arg3:string,arg4:string):Promise<void>;
+
 export function GetAll():Promise<Array<model.QueueManager>>;
 
 export function GetChannels(arg1:string):Promise<Array<model.Channel>>;

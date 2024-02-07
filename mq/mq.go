@@ -3,6 +3,7 @@ package mq
 import (
 	"context"
 
+	"github.com/AdamShannag/mqcon"
 	"github.com/AdamShannag/qmparser"
 	"github.com/AdamShannag/types"
 
@@ -10,13 +11,12 @@ import (
 )
 
 type IbmMQ struct {
-	ctx         context.Context
-	connections map[types.QueueChannel]jms20subset.JMSContext
-	parser      qmparser.QueueMessageParser
+	ctx    context.Context
+	parser qmparser.QueueMessageParser
 }
 
-func NewIbmMQ(connections map[types.QueueChannel]jms20subset.JMSContext, parser qmparser.QueueMessageParser) *IbmMQ {
-	return &IbmMQ{connections: connections, parser: parser}
+func NewIbmMQ(parser qmparser.QueueMessageParser) *IbmMQ {
+	return &IbmMQ{parser: parser}
 }
 
 func (q *IbmMQ) SendMessageToQueue(queueManager, channelName, sendTo, message string) bool {
@@ -128,6 +128,6 @@ func (q *IbmMQ) getJmsAndQueue(queueManager, channelName, queue string) (jms20su
 		QueueManager: queueManager,
 		Channel:      channelName,
 	}
-	jms := q.connections[queueChannel]
+	jms := mqcon.Get()[queueChannel]
 	return jms, jms.CreateQueue(queue)
 }

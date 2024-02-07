@@ -13,6 +13,7 @@ import { ButtonModule } from "primeng/button";
 import { ChipsModule } from "primeng/chips";
 import { LoadingComponent } from "../../../shared/components/loading/loading.component";
 import { LoadingService } from "../../../shared/components/loading/loading.service";
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-layout',
@@ -30,6 +31,7 @@ import { LoadingService } from "../../../shared/components/loading/loading.servi
     ButtonModule,
     ChipsModule,
     LoadingComponent,
+    ToastModule
   ],
   styleUrl: './layout.component.scss'
 })

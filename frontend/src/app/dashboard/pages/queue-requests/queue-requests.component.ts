@@ -5,13 +5,15 @@ import { SendMessageComponent } from '../../../shared/components/send-message/se
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageService, Message } from 'primeng/api';
+import { MessageService, Message, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
 import { IbmmqDataService } from '../../../shared/services/ibmmq.data.service';
 import { QueueResolverData } from '../../../shared/resolvers/queue-channel-connect.resolver';
+import { DeleteQueue } from '../../../../../wailsjs/go/store/queueStore';
+import { MenuComponent } from '../../layout/menu/menu.component';
 
 @Component({
   selector: 'app-queue-requests',
@@ -39,7 +41,11 @@ export class QueueRequestsComponent {
 
   tabs: { title: string, closable: boolean, selected: boolean, messageContent: string }[] = []
 
-  constructor(private messageService: MessageService, private route: ActivatedRoute, private ibmmqDataservice: IbmmqDataService) {
+  constructor(private messageService: MessageService,
+    private route: ActivatedRoute,
+    private ibmmqDataservice: IbmmqDataService,
+    private confirmationService: ConfirmationService,
+    private router: Router) {
   }
 
   ngOnInit() {
@@ -75,5 +81,34 @@ export class QueueRequestsComponent {
 
   showToastMessage($event: Message) {
     this.messageService.add($event);
+  }
+
+  closeTab() {
+    this.tabs = []
+    this.ibmmqDataservice.getRequests(this.queueManager, this.channelName, this.queue).then(r => {
+      r.forEach(item => {
+        this.tabs.push({ title: item.name, closable: true, selected: false, messageContent: item.message })
+      })
+    })
+  }
+
+  deleteQueue() {
+    this.confirmationService.confirm({
+      message: `Do you want to proceed with deleting "${this.queue}" queue?`,
+      header: 'Queue Delete Confirmation',
+      icon: 'pi pi-exclamation-circle',
+      acceptButtonStyleClass: "p-button-danger p-button-text",
+      rejectButtonStyleClass: "p-button-text p-button-text",
+      acceptIcon: "none",
+      rejectIcon: "none",
+
+      accept: () => {
+        DeleteQueue(this.queueManager, this.channelName, this.queue).then(() => {
+          this.router.navigateByUrl('/').then(() => {
+            location.reload()
+          })
+        })
+      }
+    });
   }
 }
