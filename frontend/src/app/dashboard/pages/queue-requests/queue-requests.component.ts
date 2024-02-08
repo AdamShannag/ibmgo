@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TabViewModule } from 'primeng/tabview';
-import { SendMessageComponent } from '../../../shared/components/send-message/send-message.component';
+import { EditRequestNameEvent, SendMessageComponent } from '../../../shared/components/send-message/send-message.component';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -56,6 +56,7 @@ export class QueueRequestsComponent {
       this.channelName = data.channel
       this.queue = data.queue.name
       this.ibmmqDataservice.getRequests(this.queueManager, this.channelName, this.queue).then(r => {
+        console.log(r)
         r.forEach(item => {
           this.tabs.push({ title: item.name, closable: true, selected: false, messageContent: item.message })
         })
@@ -110,5 +111,19 @@ export class QueueRequestsComponent {
         })
       }
     });
+  }
+
+  changeRequestName($event: EditRequestNameEvent) {
+    if (this.tabs.filter(tab => tab.title === $event.newName).length !== 0) {
+      this.showToastMessage({ key: 'queue', severity: 'error', summary: 'Error', detail: `Tab "${$event.newName}" already exists` })
+      return
+    }
+    this.tabs.forEach(tab => {
+      if (tab.title === $event.oldName) {
+        this.ibmmqDataservice.changeRequestName(this.queueManager, this.channelName, this.queue, $event.oldName, $event.newName).then(() => {
+          tab.title = $event.newName
+        })
+      }
+    })
   }
 }

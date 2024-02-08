@@ -41,7 +41,7 @@
     <p-tabPanel [header]="tab.title" [closable]="false" [selected]="tab.selected">
       <app-send-message (toastMessageEvent)="showToastMessage($event)" [channelName]="channelName"
         [queueManager]="queueManager" [queue]="queue" [request]="tab.title" [message]="tab.messageContent"
-        (deleteRequestEvent)="closeTab()"></app-send-message>
+        (deleteRequestEvent)="closeTab()" (editRequestNameEvent)="changeRequestName($event)"></app-send-message>
     </p-tabPanel>
     }
     <p-tabPanel #tab>

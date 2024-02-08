@@ -253,3 +253,26 @@ func (s *queueStore) WipeData() error {
 		return nil
 	})
 }
+
+func (s *queueStore) ChangeRequestName(queueManager, channel, queue, oldRequest, newRequest string) error {
+	qm, err := s.GetQueueManager(queueManager)
+	if err != nil {
+		return err
+	}
+
+	newRequestModel := model.Request{
+		Name:    newRequest,
+		Message: qm.Channels[channel].Queues[queue].Requests[oldRequest].Message,
+	}
+
+	delete(qm.Channels[channel].Queues[queue].Requests, oldRequest)
+
+	qm.Channels[channel].Queues[queue].Requests[newRequest] = newRequestModel
+
+	_, err = s.CreateQueueManager(qm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

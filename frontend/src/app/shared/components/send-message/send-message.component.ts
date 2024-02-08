@@ -10,10 +10,17 @@ import { IbmmqDataService } from '../../services/ibmmq.data.service';
 import { Editor, EditorModule, EditorTextChangeEvent } from 'primeng/editor';
 import Quill from 'quill';
 import { DeleteRequest } from '../../../../../wailsjs/go/store/queueStore';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { EditTabNameDialogComponent } from '../edit-tab-name-dialog/edit-tab-name-dialog.component';
 
 export type QueueMessageEvent = {
   queue: string;
   message: string;
+}
+
+export type EditRequestNameEvent = {
+  oldName: string;
+  newName: string;
 }
 
 @Component({
@@ -21,12 +28,14 @@ export type QueueMessageEvent = {
   standalone: true,
   imports: [CommonModule, ButtonModule, FormsModule, InputTextModule, TableModule, EditorModule],
   templateUrl: './send-message.component.html',
+  providers: [DialogService],
   styleUrl: './send-message.component.scss'
 })
 export class SendMessageComponent implements AfterViewInit {
   allowedCommands = ['UUID', `Date "yyyy-MM-dd"`, `Date "yyMMdd"`, `Date "yy/MM/dd"`, 'RandomString $']; // Add your specific words here
 
   @ViewChild('editorRef') editorComponent!: Editor;
+  ref: DynamicDialogRef | undefined;
 
   @Input()
   queueManager = ''
@@ -42,6 +51,7 @@ export class SendMessageComponent implements AfterViewInit {
   text = ''
 
   @Output() deleteRequestEvent = new EventEmitter<boolean>();
+  @Output() editRequestNameEvent = new EventEmitter<EditRequestNameEvent>();
 
   numberOfMessages: number | undefined;
 
@@ -54,7 +64,10 @@ export class SendMessageComponent implements AfterViewInit {
 
   @Output() toastMessageEvent = new EventEmitter<Message>();
 
-  constructor(private ibmGoApiService: IbmGoApiService, private ibmDataService: IbmmqDataService, private confirmationService: ConfirmationService) { }
+  constructor(private ibmGoApiService: IbmGoApiService,
+    private ibmDataService: IbmmqDataService,
+    private confirmationService: ConfirmationService,
+    private dialogService: DialogService) { }
 
   ngAfterViewInit(): void {
     const quill = this.editorComponent.getQuill() as Quill;
@@ -146,6 +159,27 @@ export class SendMessageComponent implements AfterViewInit {
         DeleteRequest(this.queueManager, this.channelName, this.queue, this.request).then(() => {
           this.deleteRequestEvent.emit(true)
         })
+      }
+    });
+  }
+
+
+  editRequestName() {
+    const ref = this.dialogService.open(EditTabNameDialogComponent, {
+      data: {
+        tabName: this.request
+      },
+      header: 'Edit Tab',
+      width: '40%',
+      contentStyle: { overflow: 'auto' },
+      baseZIndex: 10000,
+      maximizable: false
+    });
+
+    ref.onClose.subscribe((tabName: string) => {
+      if (tabName) {
+        this.editRequestNameEvent.emit({ oldName: this.request, newName: tabName })
+        this.request = tabName
       }
     });
   }

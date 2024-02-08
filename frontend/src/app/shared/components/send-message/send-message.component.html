@@ -9,6 +9,8 @@
       [disabled]="sendButtonDisabled"></p-button>
     <p-button pRipple type="button" icon="pi pi-trash" (click)="deleteMessage()" size="large"
       severity="danger"></p-button>
+    <p-button pRipple type="button" icon="pi pi-pencil" (click)="editRequestName()" size="large"
+      severity="info"></p-button>
   </div>
 
   <p-editor #editorRef [style]="{ height: '320px' }" [modules]="{toolbar:false}" (onTextChange)="updateText($event)">

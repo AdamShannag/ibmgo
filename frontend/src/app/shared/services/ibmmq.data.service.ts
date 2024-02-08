@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { AddQueueToChannel, CreateQueueManager, GetAll, GetChannels, GetQueue, GetQueues, GetRequestForQueue, SaveMessageRequest, WipeData } from '../../../../wailsjs/go/store/queueStore';
+import { AddQueueToChannel, ChangeRequestName, CreateQueueManager, GetAll, GetChannels, GetQueue, GetQueues, GetRequestForQueue, SaveMessageRequest, WipeData } from '../../../../wailsjs/go/store/queueStore';
 import { model } from '../../../../wailsjs/go/models';
 
 
@@ -77,6 +77,10 @@ export class IbmmqDataService {
 
   async wipeData() {
     await WipeData()
+  }
+
+  async changeRequestName(queueManager: string, channel: string, queue: string, oldName: string, newName: string) {
+    await ChangeRequestName(queueManager, channel, queue, oldName, newName);
   }
 
   private updateDataSignal() {

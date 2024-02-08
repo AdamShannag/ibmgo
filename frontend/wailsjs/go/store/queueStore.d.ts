@@ -4,6 +4,8 @@ import {model} from '../models';
 
 export function AddQueueToChannel(arg1:string,arg2:string,arg3:model.Queue):Promise<void>;
 
+export function ChangeRequestName(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string):Promise<void>;
+
 export function CreateQueueManager(arg1:model.QueueManager):Promise<model.QueueManager>;
 
 export function DeleteQueue(arg1:string,arg2:string,arg3:string):Promise<void>;

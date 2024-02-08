@@ -6,6 +6,10 @@ export function AddQueueToChannel(arg1, arg2, arg3) {
   return window['go']['store']['queueStore']['AddQueueToChannel'](arg1, arg2, arg3);
 }
 
+export function ChangeRequestName(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['store']['queueStore']['ChangeRequestName'](arg1, arg2, arg3, arg4, arg5);
+}
+
 export function CreateQueueManager(arg1) {
   return window['go']['store']['queueStore']['CreateQueueManager'](arg1);
 }
