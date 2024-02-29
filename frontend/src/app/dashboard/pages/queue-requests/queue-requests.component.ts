@@ -12,8 +12,8 @@ import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
 import { IbmmqDataService } from '../../../shared/services/ibmmq.data.service';
 import { QueueResolverData } from '../../../shared/resolvers/queue-channel-connect.resolver';
-import { DeleteQueue } from '../../../../../wailsjs/go/store/queueStore';
-import { MenuComponent } from '../../layout/menu/menu.component';
+import { DeleteQueue, GetQueueManager } from '../../../../../wailsjs/go/store/queueStore';
+import { ConnectToIbmmq } from '../../../../../wailsjs/go/mq/IbmMQ';
 
 @Component({
   selector: 'app-queue-requests',
@@ -65,7 +65,7 @@ export class QueueRequestsComponent {
   }
 
   addTab(tab: any) {
-    const newTabName = this.newTab.trim() === '' ? 'New tab' : this.newTab.trim();
+    const newTabName = this.newTab.trim() === '' ? 'tab_' + this.tabs.length : this.newTab.trim();
     this.tabs.forEach(item => item.selected = false)
 
     const newTab = {
@@ -74,10 +74,12 @@ export class QueueRequestsComponent {
       selected: true,
       messageContent: ''
     };
-    this.tabs.push(newTab)
 
-    this.newTab = '';
-    tab.selected = false
+    this.ibmmqDataservice.saveMessageToQueueRequest(this.queueManager, this.channelName, this.queue, newTabName, '').finally(() => {
+      this.tabs.push(newTab)
+      this.newTab = '';
+      tab.selected = false
+    })
   }
 
   showToastMessage($event: Message) {
@@ -111,6 +113,20 @@ export class QueueRequestsComponent {
         })
       }
     });
+  }
+
+  reconnect() {
+    GetQueueManager(this.queueManager).then(qm => {
+      if (qm.name !== this.queueManager) {
+        this.showToastMessage({ key: 'queue', severity: 'error', summary: 'Error', detail: `Failed to reconnect` })
+        return
+      }
+      ConnectToIbmmq(this.queueManager, this.channelName, qm.connection_settings).then((r: boolean) => {
+        if (r === true) {
+          this.showToastMessage({ key: 'queue', severity: 'success', summary: 'Connected!', detail: `Connected to ${this.queueManager}.${this.channelName}` });
+        }
+      })
+    })
   }
 
   changeRequestName($event: EditRequestNameEvent) {

@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/AdamShannag/model"
 	"github.com/AdamShannag/mqcon"
@@ -213,8 +214,11 @@ func (s *queueStore) DeleteRequest(queueManager, channel, queue, request string)
 	if err != nil {
 		return err
 	}
+	log.Println("BEFORE:", qm.Channels[channel].Queues[queue].Requests)
 
 	delete(qm.Channels[channel].Queues[queue].Requests, request)
+
+	log.Println("AFTER:", qm.Channels[channel].Queues[queue].Requests)
 
 	_, err = s.CreateQueueManager(qm)
 	if err != nil {

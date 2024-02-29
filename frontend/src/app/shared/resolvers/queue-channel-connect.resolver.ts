@@ -3,8 +3,8 @@ import { IbmmqDataService } from '../services/ibmmq.data.service';
 import { inject } from '@angular/core';
 import { model } from '../../../../wailsjs/go/models';
 import { GetQueueManager } from '../../../../wailsjs/go/store/queueStore';
-import { ConnectToIbmmq } from '../../../../wailsjs/go/main/App';
 import { MessageService } from 'primeng/api';
+import { ConnectToIbmmq } from '../../../../wailsjs/go/mq/IbmMQ';
 
 export type QueueResolverData = {
   queueManager: string;

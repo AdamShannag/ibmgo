@@ -101,13 +101,26 @@ export class SendMessageComponent implements AfterViewInit {
       this.toastMessageEvent.emit({ key: 'queue', severity: 'error', summary: 'Error', detail: 'Field: Queue name is empty!' });
       return
     }
-    this.clearButtonDisabled = true
-    this.ibmGoApiService.consumeAllMessages(this.queueManager, this.channelName, this.queue).then(_ => {
-      this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => {
-        this.queueMessages.update(items => messages)
-        this.clearButtonDisabled = false
-      })
-    })
+
+    this.confirmationService.confirm({
+      message: `Clear All Messages?`,
+      header: 'Clear Confirmation',
+      icon: 'pi pi-exclamation-circle',
+      acceptButtonStyleClass: "p-button-danger p-button-text",
+      rejectButtonStyleClass: "p-button-text p-button-text",
+      acceptIcon: "none",
+      rejectIcon: "none",
+
+      accept: () => {
+        this.clearButtonDisabled = true
+        this.ibmGoApiService.consumeAllMessages(this.queueManager, this.channelName, this.queue).then(_ => {
+          this.ibmGoApiService.browseMessages(this.queueManager, this.channelName, this.queue).then(messages => {
+            this.queueMessages.update(items => messages)
+            this.clearButtonDisabled = false
+          })
+        })
+      }
+    });
   }
 
   updateRequestData() {

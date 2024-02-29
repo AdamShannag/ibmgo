@@ -6,14 +6,18 @@ export function BrowseMessages(arg1, arg2, arg3) {
   return window['go']['mq']['IbmMQ']['BrowseMessages'](arg1, arg2, arg3);
 }
 
+export function ConnectToIbmmq(arg1, arg2, arg3) {
+  return window['go']['mq']['IbmMQ']['ConnectToIbmmq'](arg1, arg2, arg3);
+}
+
 export function ConsumeAllMessages(arg1, arg2, arg3) {
   return window['go']['mq']['IbmMQ']['ConsumeAllMessages'](arg1, arg2, arg3);
 }
 
-export function SendBulkToQueue(arg1, arg2, arg3, arg4, arg5) {
-  return window['go']['mq']['IbmMQ']['SendBulkToQueue'](arg1, arg2, arg3, arg4, arg5);
+export function CreateIbmmqConnection(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['mq']['IbmMQ']['CreateIbmmqConnection'](arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
-export function SendMessageToQueue(arg1, arg2, arg3, arg4) {
-  return window['go']['mq']['IbmMQ']['SendMessageToQueue'](arg1, arg2, arg3, arg4);
+export function SendBulkToQueue(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['mq']['IbmMQ']['SendBulkToQueue'](arg1, arg2, arg3, arg4, arg5);
 }

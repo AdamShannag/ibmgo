@@ -69,20 +69,26 @@ export class MenuComponent implements OnInit {
   }
 
   private openNewQueueDialog(queueManager: string, channelName: string): void {
-    const ref = this.dialogService.open(NewQueueDialogComponent, {
-      header: 'New Queue',
-      width: '40%',
-      contentStyle: { overflow: 'auto' },
-      baseZIndex: 10000,
-      maximizable: false
-    });
+    this.ibmmqService.getQueues(queueManager, channelName).then(r => {
+      const ref = this.dialogService.open(NewQueueDialogComponent, {
+        header: 'New Queue',
+        data: r,
+        width: '40%',
+        height: '230px',
+        contentStyle: { overflow: 'auto' },
+        baseZIndex: 10000,
+        maximizable: false
+      });
 
-    ref.onClose.subscribe((queueName: string) => {
-      if (queueName) {
-        this.ibmmqService.addQueueToChannel(queueManager, channelName, queueName)
-          .then(() => this.addQueueMenuItem(queueName, queueManager, channelName));
-      }
-    });
+      ref.onClose.subscribe((queueName: string) => {
+        if (queueName) {
+          this.ibmmqService.addQueueToChannel(queueManager, channelName, queueName)
+            .then(() => this.addQueueMenuItem(queueName, queueManager, channelName));
+        }
+      });
+    })
+
+
   }
 
   addQueueMenuItem(queueName: string, queueManagerName: string, channelName: string): void {

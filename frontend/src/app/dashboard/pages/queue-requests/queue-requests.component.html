@@ -32,8 +32,12 @@
 <div class="card mb-4">
   <div class="flex justify-content-between">
     <h3 class="text-400">Requests</h3>
-    <p-button pRipple type="button" label="Remove Queue" severity="danger" (click)="deleteQueue()"
-      size="large"></p-button>
+    <div class="flex gap-4">
+      <p-button pRipple type="button" label="Reconnect" icon="pi pi-sync" severity="info" (click)="reconnect()"
+        size="large"></p-button>
+      <p-button pRipple type="button" label="Remove Queue" icon="pi pi-trash" severity="danger" (click)="deleteQueue()"
+        size="large"></p-button>
+    </div>
   </div>
   <p-divider></p-divider>
   <p-tabView>

@@ -3,11 +3,13 @@ package mq
 import (
 	"context"
 
+	"github.com/AdamShannag/model"
 	"github.com/AdamShannag/mqcon"
 	"github.com/AdamShannag/qmparser"
 	"github.com/AdamShannag/types"
 
 	"github.com/ibm-messaging/mq-golang-jms20/jms20subset"
+	"github.com/ibm-messaging/mq-golang-jms20/mqjms"
 )
 
 type IbmMQ struct {
@@ -19,17 +21,51 @@ func NewIbmMQ(parser qmparser.QueueMessageParser) *IbmMQ {
 	return &IbmMQ{parser: parser}
 }
 
-func (q *IbmMQ) SendMessageToQueue(queueManager, channelName, sendTo, message string) bool {
-	message = q.parser.ParseMessage(message)
-	jms, queue := q.getJmsAndQueue(queueManager, channelName, sendTo)
-
-	msg1 := jms.CreateTextMessageWithString(message)
-
-	err := jms.CreateProducer().Send(queue, msg1)
-	if err != nil {
-		return false
+func (a *IbmMQ) CreateIbmmqConnection(port int, queueName, hostname, channeName, username, password string) types.ConnectionResponse {
+	queueChannel := types.QueueChannel{
+		QueueManager: queueName,
+		Channel:      channeName,
 	}
-	return true
+	if ok := mqcon.Get()[queueChannel]; ok != nil {
+		return types.ConnectionResponse{Status: false, ErrCode: "Error", ErrReason: "Connection already exists!"}
+	}
+
+	cf := mqjms.ConnectionFactoryImpl{
+		QMName:      queueName,
+		Hostname:    hostname,
+		PortNumber:  port,
+		ChannelName: channeName,
+		UserName:    username,
+		Password:    password,
+	}
+
+	context, errCtx := cf.CreateContext()
+
+	if errCtx != nil {
+		return types.ConnectionResponse{Status: false, ErrCode: errCtx.GetErrorCode(), ErrReason: errCtx.GetReason()}
+	}
+
+	mqcon.Set(queueChannel, context)
+
+	return types.ConnectionResponse{Status: true, ErrCode: "", ErrReason: ""}
+}
+
+func (a *IbmMQ) ConnectToIbmmq(queueName, channelName string, connectionDetails model.ConnectionData) bool {
+	queueChannel := types.QueueChannel{
+		QueueManager: queueName,
+		Channel:      channelName,
+	}
+
+	if ok := mqcon.Get()[queueChannel]; ok != nil {
+		mqcon.Set(queueChannel, nil)
+	}
+
+	cr := a.CreateIbmmqConnection(connectionDetails.Port, queueName, connectionDetails.Hostname, channelName, connectionDetails.Username, connectionDetails.Password)
+	if cr.Status {
+		return true
+	}
+
+	return false
 }
 
 func (q *IbmMQ) SendBulkToQueue(queueManager, channelName, sendTo, message string, amount int) bool {
@@ -81,15 +117,26 @@ func (q *IbmMQ) BrowseMessages(queueManager, channelName, from string) types.Bro
 
 	messages := []types.QueueMessage{}
 
-	for msg, err := msgIterator.GetNext(); err == nil && msg != nil; {
+	msg, err := msgIterator.GetNext()
+	for msg != nil && err == nil {
 		textMsg := msg.(jms20subset.TextMessage)
+
+		data := "Unavailable"
+		if textMsg.GetText() != nil {
+			data = *textMsg.GetText()
+		}
+
 		m := types.QueueMessage{
 			MessageID: textMsg.GetJMSMessageID(),
 			Timestamp: textMsg.GetJMSTimestamp(),
-			Data:      *textMsg.GetText(),
+			Data:      data,
 		}
+
 		messages = append(messages, m)
 		msg, err = msgIterator.GetNext()
+		if err != nil {
+			break
+		}
 	}
 
 	response.Messages = messages

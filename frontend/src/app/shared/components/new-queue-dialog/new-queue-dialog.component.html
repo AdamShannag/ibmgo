@@ -1,11 +1,12 @@
-<form (ngSubmit)="addQueue()" [formGroup]="formGroup" class="p-4">
-  <div class="p-fluid p-formgrid grid">
-    <div class="field col-12">
-      <label htmlFor="queue">Queue Name</label>
-      <input pInputText id="queue" type="text" formControlName="queue" class="p-inputtext-lg" />
-    </div>
-  </div>
-  <div class="flex justify-content-end">
-    <p-button pRipple type="submit" label="Add" icon="pi pi-plus" size="large"></p-button>
+<form (ngSubmit)="addQueue()" [formGroup]="formGroup" class="p-4 flex align-items-center">
+  <div class="field w-full">
+    <label htmlFor="queue">Queue Name</label>
+    <p-inputGroup id="queue">
+      <input type="text" pInputText class="p-inputtext-lg" formControlName="queue" />
+      <button type="submit" pButton label="Add"></button>
+    </p-inputGroup>
+    @if(formGroup.get("queue")?.errors?.["duplicateQueue"]){
+    <small id="queue-error" class="p-error">queue already exists</small>
+    }
   </div>
 </form>

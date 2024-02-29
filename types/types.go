@@ -15,3 +15,9 @@ type BrowseMessagesResponse struct {
 	Status   bool
 	Messages []QueueMessage
 }
+
+type ConnectionResponse struct {
+	Status    bool
+	ErrCode   string
+	ErrReason string
+}
